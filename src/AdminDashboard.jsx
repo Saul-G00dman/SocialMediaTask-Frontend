@@ -19,9 +19,11 @@ const AdminDashboard = () => {
 
   const fetchSubmissions = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/submissions');
+      const response = await fetch('https://socialmediatask-backend-knus.onrender.com/api/submissions');
       if (!response.ok) throw new Error('Failed to fetch submissions');
       const data = await response.json();
+      console.log(data);
+      
       setSubmissions(data);
       setError(null);
     } catch (err) {
@@ -33,7 +35,7 @@ const AdminDashboard = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/submissions/${id}`, {
+      const response = await fetch(`https://socialmediatask-backend-knus.onrender.com/api/submissions/${id}`, {
         method: 'DELETE',
       });
 
@@ -45,10 +47,8 @@ const AdminDashboard = () => {
         isError: false
       });
 
-      // Remove the deleted submission from state
       setSubmissions(submissions.filter(sub => sub._id !== id));
 
-      // Hide the success message after 3 seconds
       setTimeout(() => {
         setDeleteStatus({ show: false, message: '', isError: false });
       }, 3000);
@@ -60,7 +60,6 @@ const AdminDashboard = () => {
         isError: true
       });
 
-      // Hide the error message after 3 seconds
       setTimeout(() => {
         setDeleteStatus({ show: false, message: '', isError: false });
       }, 3000);
@@ -90,6 +89,15 @@ const AdminDashboard = () => {
       </div>
     );
   }
+
+  const getImageUrl = (imagePath) => {
+    // If it's already a full URL (Cloudinary), return as is
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    // Otherwise, construct the full URL for local uploads
+    return `https://socialmediatask-backend-knus.onrender.com/${imagePath}`;
+  };
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -126,8 +134,8 @@ const AdminDashboard = () => {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {submissions.map((submission) => {
-            const platform = SOCIAL_PLATFORMS[submission.socialPlatform];
-            const IconComponent = platform.icon;
+            const platform = SOCIAL_PLATFORMS[submission.socialPlatform.toLowerCase()];
+            const IconComponent = platform?.icon || Github; // Default to Github if platform not found
             
             return (
               <div
@@ -147,8 +155,8 @@ const AdminDashboard = () => {
                 <div className="p-4">
                   <h3 className="text-lg font-semibold">{submission.name}</h3>
                   <div className="flex items-center gap-2 mt-1">
-                    <IconComponent className={`w-4 h-4 ${platform.color}`} />
-                    <p className={platform.color}>
+                    <IconComponent className={`w-4 h-4 ${platform?.color || 'text-gray-800'}`} />
+                    <p className={platform?.color || 'text-gray-800'}>
                       @{submission.socialHandle}
                     </p>
                   </div>
@@ -158,10 +166,10 @@ const AdminDashboard = () => {
                   {submission.images.map((image, index) => (
                     <img
                       key={index}
-                      src={`http://localhost:3000/${image}`}
+                      src={getImageUrl(image)}
                       alt={`Upload by ${submission.name}`}
                       className="w-full h-32 object-cover rounded-md cursor-pointer"
-                      onClick={() => window.open(`http://localhost:3000/${image}`, '_blank')}
+                      onClick={() => window.open(getImageUrl(image), '_blank')}
                     />
                   ))}
                 </div>
