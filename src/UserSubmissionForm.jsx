@@ -81,7 +81,7 @@ const UserSubmissionForm = () => {
         formDataToSend.append('images', image);
       });
 
-      const response = await fetch('http://localhost:3000/api/submissions', {
+      const response = await fetch('https://socialmediatask-backend-knus.onrender.com/api/submissions', {
         method: 'POST',
         body: formDataToSend,
       });
